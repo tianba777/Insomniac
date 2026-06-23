@@ -518,6 +518,7 @@ class SearchView(InstagramView):
         return ProfileView(self.device, is_own_profile=False)
 
     def navigate_to_hashtag(self, hashtag):
+        hashtag = hashtag.lstrip('#')
         print_debug(f"Navigate to hashtag #{hashtag}")
 
         search_edit_text = self._get_search_edit_text()
@@ -532,16 +533,20 @@ class SearchView(InstagramView):
             return HashTagView(self.device)
         print(f"#{hashtag} is not in recent searching history...")
 
-        search_edit_text.set_text(hashtag)
+        search_edit_text.set_text(f"#{hashtag}")
         search_text = self.device.find(resourceId=self.SEARCH_TEXT_ID.format(self.device.app_id),
                                        className=self.SEARCH_TEXT_CLASSNAME)
         search_text.click(ignore_if_missing=True)
 
         hashtag_view = self._get_hashtag_row(hashtag)
         if not hashtag_view.exists():
-            # Fallback: try switching to TAGS tab
-            if self._open_tab(SearchTabs.TAGS):
-                hashtag_view = self._get_hashtag_row(hashtag)
+            # Fallback: try without # prefix
+            search_edit_text = self._get_search_edit_text()
+            if search_edit_text.exists(quick=True):
+                search_edit_text.set_text(hashtag)
+                search_text.click(ignore_if_missing=True)
+                if self._open_tab(SearchTabs.TAGS):
+                    hashtag_view = self._get_hashtag_row(hashtag)
         if not hashtag_view.exists():
             print(COLOR_FAIL + f"Cannot find hashtag #{hashtag}, abort." + COLOR_ENDC)
             save_crash(self.device)
@@ -615,7 +620,10 @@ class PostsViewList(InstagramView):
 
         recycler_view = self.device.find(resourceId='android:id/list',
                                          className='androidx.recyclerview.widget.RecyclerView')
-        recycler_view.scroll(DeviceFacade.Direction.BOTTOM)
+        if recycler_view.exists(quick=True):
+            recycler_view.scroll(DeviceFacade.Direction.BOTTOM)
+        else:
+            self.device.swipe(DeviceFacade.Direction.TOP)
 
     def get_current_post(self) -> 'OpenedPostView':
         display_width = self.device.get_info()["displayWidth"] / 2
