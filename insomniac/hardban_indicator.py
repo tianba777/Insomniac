@@ -16,8 +16,14 @@ class HardBanIndicator:
         """
         device_id = device.device_id
         app_id = device.app_id
-        resumed_activity_output = execute_command("adb" + ("" if device_id is None else " -s " + device_id) +
-                                                  f" shell dumpsys activity | grep 'mResumedActivity'")
+        raw_output = execute_command("adb" + ("" if device_id is None else " -s " + device_id) +
+                                     " shell dumpsys activity")
+        resumed_activity_output = None
+        if raw_output:
+            for line in raw_output.splitlines():
+                if 'mResumedActivity' in line:
+                    resumed_activity_output = line
+                    break
 
         max_attempts = 3
         attempt = 1

@@ -317,12 +317,12 @@ class ActionBarView(InstagramView):
 
 
 class HomeView(InstagramView):
-    LOGO_ID_REGEX = '{0}:id/(action_bar_textview_custom_title_container|action_bar_textview_title_container|action_bar_new_title_container)'
-    LOGO_CLASS_NAME = 'android.widget.FrameLayout'
+    LOGO_ID_REGEX = '{0}:id/(action_bar_textview_custom_title_container|action_bar_textview_title_container|action_bar_new_title_container|action_bar_LinearLayout)'
+    LOGO_CLASS_NAME_REGEX = 'android.widget.FrameLayout|android.widget.LinearLayout'
 
     def is_visible(self) -> bool:
         return self.device.find(resourceIdMatches=self.LOGO_ID_REGEX.format(self.device.app_id),
-                                className=self.LOGO_CLASS_NAME).exists()
+                                classNameMatches=self.LOGO_CLASS_NAME_REGEX).exists()
 
     def navigate_to_search(self):
         print_debug("Navigate to Search")
@@ -1010,7 +1010,13 @@ class ProfileView(InstagramView):
         :return: OptionsView instance
         """
         print_debug("Navigate to Options")
-        # We wanna pick last view in the action bar
+        # Try content-desc first (new IG)
+        options_btn = self.device.find(descriptionMatches=case_insensitive_re("Options"),
+                                       clickable=True)
+        if options_btn.exists(quick=True):
+            options_btn.click()
+            return OptionsView(self.device)
+        # Fallback: pick last clickable view in the action bar
         options_view = None
         for options_view in ActionBarView.INSTANCE.get_child(clickable=True):
             pass
@@ -1028,6 +1034,9 @@ class ProfileView(InstagramView):
         """
         action_bar_icon = self.device.find(resourceId=f'{self.device.app_id}:id/action_bar_overflow_icon',
                                            className='android.widget.ImageView')
+        if not action_bar_icon.exists(quick=True):
+            action_bar_icon = self.device.find(descriptionMatches=case_insensitive_re("Options"),
+                                                clickable=True)
         action_bar_icon.click()
         return ProfileActionsView(self.device)
 
@@ -1511,7 +1520,7 @@ class FollowersFollowingListView(InstagramView):
 class CurrentStoryView(InstagramView):
     def getStoryFrame(self):
         return self.device.find(
-            resourceId=f"{self.device.app_id}:id/reel_viewer_image_view",
+            resourceIdMatches=f"{self.device.app_id}:id/(reel_viewer_image_view|reel_viewer_media_container)",
             className="android.widget.FrameLayout",
         )
 

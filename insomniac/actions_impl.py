@@ -933,7 +933,7 @@ def _check_is_follower(device, username, my_username):
 def _get_action_bar(device):
     tab_bar = device.find(
         resourceIdMatches=case_insensitive_re(
-            f"{device.app_id}:id/action_bar_container"
+            f"{device.app_id}:id/(action_bar_container|profile_action_bar)"
         ),
         className="android.widget.FrameLayout",
     )

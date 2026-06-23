@@ -223,12 +223,9 @@ class DeviceFacade:
             attempts += 1
 
     def get_brand(self) -> Optional[str]:
-        brand_prop = execute_command("adb" + ("" if self.device_id is None else " -s " + self.device_id) + " shell getprop | grep ro.product.brand")
+        brand_prop = execute_command("adb" + ("" if self.device_id is None else " -s " + self.device_id) + " shell getprop ro.product.brand")
         if brand_prop is not None:
-            brand_prop_regex = re.compile("\\[ro.product.brand]: \\[(\\S*)]")
-            match = brand_prop_regex.match(brand_prop)
-            if match:
-                return match.group(1)
+            return brand_prop.strip() or None
         return None
 
     def unlock(self):

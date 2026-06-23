@@ -32,10 +32,10 @@ class Typewriter:
         if self._is_adb_ime_existing():
             # Check version and update if needed
             stream = os.popen("adb" + ("" if self.device_id is None else " -s " + self.device_id) +
-                              f" shell dumpsys package {ADB_KEYBOARD_PKG} | grep 'versionName'")
+                              f" shell dumpsys package {ADB_KEYBOARD_PKG}")
             output = stream.read()
-            version_match = re.findall('versionName=(\\S+)', output)
             stream.close()
+            version_match = re.findall('versionName=(\\S+)', output)
             if len(version_match) == 1 and versiontuple(version_match[0]) >= ADB_KEYBOARD_VERSION:
                 print_debug("ADB Keyboard version is good")
             else:

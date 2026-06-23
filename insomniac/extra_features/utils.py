@@ -73,10 +73,16 @@ def get_package_by_name(device_id, name) -> Optional[str]:
 
         # Find app name via aapt (make sure aapt binary is in /data/local/tmp on the device)
         # Binaries are here https://github.com/Calsign/APDE/tree/master/APDE/src/main/assets/aapt-binaries
-        app_name = execute_command("adb" + ("" if device_id is None else " -s " + device_id) +
-                                   f" shell {DEVICE_AAPT_PATH}{AAPT_BINARY_NAME} d badging {path} "
-                                   f"| grep \"application: label\" "
-                                   f"| sed -n \"s/.*label\='\([^']*\)'.*/\\1/p\"")
+        app_name_output = execute_command("adb" + ("" if device_id is None else " -s " + device_id) +
+                                          f" shell {DEVICE_AAPT_PATH}{AAPT_BINARY_NAME} d badging {path}")
+        app_name = None
+        if app_name_output:
+            for line in app_name_output.splitlines():
+                if "application: label" in line:
+                    match = re.search(r"label='([^']*)'", line)
+                    if match:
+                        app_name = match.group(1)
+                    break
         if app_name == name:
             return package
     return None
@@ -96,11 +102,15 @@ def count_installed_clones(device_id):
 
 
 def close_all_instagram_apps(device_id):
-    all_apps_packages_ids = execute_command("adb" + ("" if device_id is None else " -s " + device_id) +
-                                            f" shell ps " +
-                                            f"| grep {INSTAGRAM_CLONE_PREFIX} " +
-                                            "|  awk '{print $9}'")
-    all_apps_packages_ids = {package_id.split(':')[0] for package_id in all_apps_packages_ids.split('\n') if package_id}
+    ps_output = execute_command("adb" + ("" if device_id is None else " -s " + device_id) +
+                                " shell ps")
+    all_apps_packages_ids = set()
+    if ps_output:
+        for line in ps_output.splitlines():
+            if INSTAGRAM_CLONE_PREFIX in line:
+                parts = line.split()
+                if len(parts) >= 9:
+                    all_apps_packages_ids.add(parts[8].split(':')[0])
     for package_id in all_apps_packages_ids:
         if package_id:
             close_instagram(device_id, package_id)
