@@ -7,7 +7,7 @@ from insomniac.navigation import close_instagram_and_system_dialogs
 from insomniac.sleeper import sleeper
 from insomniac.utils import *
 from insomniac.views import TabBarView, TabBarTabs, LanguageNotEnglishException
-from registration.api import get_email_code, get_phone_number, get_confirmation_code, solve_captcha
+from registration.api import get_email_code, get_phone_number, get_confirmation_code, solve_captcha, release_phone
 
 
 class UserData:
@@ -158,64 +158,81 @@ def register_accounts(device_wrapper,
     _click_next(device)
     sleeper.random_sleep(multiplier=2.0)
 
-    # Step 11: Phone number
-    print("Step 11: Enter phone number")
-    phone_number_data = get_phone_number()
-    if phone_number_data is None:
-        print(COLOR_FAIL + "Cannot get phone number!" + COLOR_ENDC)
-        return
-    phone_input = device.find(className="android.widget.EditText",
-                               textMatches="(?i)phone number")
-    if not phone_input.exists():
+    # Step 11-12: Phone number + SMS verification (3 retries)
+    MAX_SMS_RETRIES = 3
+    sms_success = False
+
+    for attempt in range(1, MAX_SMS_RETRIES + 1):
+        print(f"Step 11: Enter phone number (attempt {attempt}/{MAX_SMS_RETRIES})")
+        phone_number_data = get_phone_number()
+        if phone_number_data is None:
+            print(COLOR_FAIL + "Cannot get phone number!" + COLOR_ENDC)
+            continue
+
         phone_input = device.find(className="android.widget.EditText",
-                                   descriptionMatches="(?i)phone")
-    if phone_input.exists():
-        # Set country code if needed
-        country_btn = device.find(descriptionMatches="(?i).*\\+\\d+.*")
-        if country_btn.exists() and phone_number_data.country_code:
-            country_btn.click()
-            sleeper.random_sleep()
-            search = device.find(className="android.widget.EditText")
-            if search.exists():
-                search.set_text(phone_number_data.country_code)
+                                   textMatches="(?i)phone number")
+        if not phone_input.exists():
+            phone_input = device.find(className="android.widget.EditText",
+                                       descriptionMatches="(?i)phone")
+        if phone_input.exists():
+            country_btn = device.find(descriptionMatches="(?i).*\\+\\d+.*")
+            if country_btn.exists() and phone_number_data.country_code:
+                country_btn.click()
                 sleeper.random_sleep()
-                first_item = device.find(className="android.widget.TextView",
-                                          textMatches=f".*{phone_number_data.country_code}.*")
-                if first_item.exists():
-                    first_item.click()
+                search = device.find(className="android.widget.EditText")
+                if search.exists():
+                    search.set_text(phone_number_data.country_code)
                     sleeper.random_sleep()
-        phone_input.click()
-        phone_input.set_text(phone_number_data.phone_number)
-        sleeper.random_sleep()
+                    first_item = device.find(className="android.widget.TextView",
+                                              textMatches=f".*{phone_number_data.country_code}.*")
+                    if first_item.exists():
+                        first_item.click()
+                        sleeper.random_sleep()
+            phone_input.click()
+            phone_input.clear_text()
+            phone_input.set_text(phone_number_data.phone_number)
+            sleeper.random_sleep()
 
-    send_code_btn = device.find(descriptionMatches="(?i)send code")
-    if send_code_btn.exists():
-        send_code_btn.click()
-        sleeper.random_sleep(multiplier=3.0)
+        send_code_btn = device.find(descriptionMatches="(?i)send code")
+        if send_code_btn.exists():
+            send_code_btn.click()
+            sleeper.random_sleep(multiplier=3.0)
 
-    # Step 12: SMS verification
-    print("Step 12: SMS verification")
-    # Switch from WhatsApp to SMS if needed
-    sms_btn = device.find(descriptionMatches="(?i)send code via sms")
-    if sms_btn.exists():
-        print("Switching from WhatsApp to SMS...")
-        sms_btn.click()
-        sleeper.random_sleep(multiplier=2.0)
+        # Step 12: SMS verification
+        print("Step 12: SMS verification")
+        sms_btn = device.find(descriptionMatches="(?i)send code via sms")
+        if sms_btn.exists():
+            print("Switching from WhatsApp to SMS...")
+            sms_btn.click()
+            sleeper.random_sleep(multiplier=2.0)
 
-    sms_code = get_confirmation_code(phone_number_data.response_id)
-    if sms_code is None:
-        print(COLOR_FAIL + "Cannot get SMS confirmation code!" + COLOR_ENDC)
+        sms_code = get_confirmation_code(phone_number_data.pkey or phone_number_data.response_id)
+        if sms_code:
+            sms_input = device.find(className="android.widget.EditText",
+                                     textMatches="(?i).*digit code.*")
+            if not sms_input.exists():
+                sms_input = device.find(className="android.widget.EditText")
+            if sms_input.exists():
+                sms_input.click()
+                sms_input.set_text(sms_code)
+                sleeper.random_sleep()
+            _click_next(device)
+            sleeper.random_sleep(multiplier=5.0)
+            release_phone(phone_number_data.pkey, "registered")
+            sms_success = True
+            break
+        else:
+            print(COLOR_FAIL + f"SMS code not received for attempt {attempt}" + COLOR_ENDC)
+            release_phone(phone_number_data.pkey, "release")
+            # Click "Update mobile number" to try another number
+            update_btn = device.find(descriptionMatches="(?i)update mobile number")
+            if update_btn.exists():
+                update_btn.click()
+                sleeper.random_sleep(multiplier=2.0)
+
+    if not sms_success:
+        print(COLOR_FAIL + "All SMS attempts failed!" + COLOR_ENDC)
         return
-    sms_input = device.find(className="android.widget.EditText",
-                             textMatches="(?i).*digit code.*")
-    if not sms_input.exists():
-        sms_input = device.find(className="android.widget.EditText")
-    if sms_input.exists():
-        sms_input.click()
-        sms_input.set_text(sms_code)
-        sleeper.random_sleep()
-    _click_next(device)
-    sleeper.random_sleep(multiplier=5.0)
 
     # Skip any remaining dialogs
     print("Skipping remaining setup dialogs...")

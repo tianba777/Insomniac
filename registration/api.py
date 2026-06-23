@@ -138,6 +138,24 @@ def get_confirmation_code(response_id, timeout=SMS_POLL_TIMEOUT) -> Optional[str
     return None
 
 
+# ── Release Phone Number ──
+
+def release_phone(pkey, reason="release"):
+    """Release or blacklist a phone number after use."""
+    if not pkey:
+        return
+    try:
+        import httpx
+        httpx.post(
+            f"{HELPER_API_URL}/sms/release",
+            json={"pkey": str(pkey), "reason": reason},
+            timeout=15,
+        )
+        print(f"Phone released (reason={reason})")
+    except Exception as e:
+        print(f"Phone release error: {e}")
+
+
 # ── Captcha (via 2Captcha) ──
 
 def solve_captcha(img_bytes: bytes, timeout=CAPTCHA_POLL_TIMEOUT) -> Optional[str]:
