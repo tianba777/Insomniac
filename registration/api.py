@@ -154,11 +154,13 @@ def _get_confirmation_code_sms_activate(response_id) -> Optional[str]:
             print("Let's wait a bit more: confirmation code isn't received yet")
 
 
-# Choose either "simple" implementation (asks you to enter phone number and confirmation code in the terminal manually)
-# or implementation via smspva.com API (automatically gets confirmation code from a remote SIM card).
-#
-# You can also write your own implementation! It just has to follow these rules: 1) get_phone_number() returns
-# PhoneNumberData object and 2) get_confirmation_code(response_id) takes response_id argument from PhoneNumberData and
-# returns confirmation code (string).
+# -------- Email code --------
+
+def _get_email_code_simple(email) -> Optional[str]:
+    return input(f"Enter the 6-digit code sent to {email}: ")
+
+
+# Choose implementations
 get_phone_number = _get_phone_number_simple  # or _get_phone_number_smspva or _get_phone_number_sms_activate
 get_confirmation_code = _get_confirmation_code_simple  # or _get_confirmation_code_smspva or _get_confirmation_code_sms_activate
+get_email_code = _get_email_code_simple  # implement your own email API here
