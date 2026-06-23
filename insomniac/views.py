@@ -1290,7 +1290,6 @@ class ProfileView(InstagramView):
 
     def open_messages(self):
         message_button = self.device.find(
-            classNameMatches=self.MESSAGE_BUTTON_CLASS_NAME_REGEX,
             textMatches=case_insensitive_re('Message')
         )
         if message_button.exists(quick=True):
