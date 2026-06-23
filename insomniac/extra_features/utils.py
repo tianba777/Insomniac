@@ -116,7 +116,7 @@ def install_aapt_if_needed(device_id):
     print("AAPT is missing, installing...")
     aapt_path = os.path.join(os.path.dirname(os.path.abspath(insomniac.__file__)), "assets", AAPT_BINARY_NAME)
     execute_command("adb" + ("" if device_id is None else " -s " + device_id) +
-                    f" push {aapt_path} {DEVICE_AAPT_PATH}")
+                    f' push "{aapt_path}" {DEVICE_AAPT_PATH}')
     # Make it executable
     execute_command("adb" + ("" if device_id is None else " -s " + device_id) +
                     f" shell chmod 755 {DEVICE_AAPT_PATH}{AAPT_BINARY_NAME}")

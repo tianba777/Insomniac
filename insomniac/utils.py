@@ -36,7 +36,12 @@ COLOR_BOLD = Style.BRIGHT
 ENGINE_LOGS_DIR_NAME = 'logs'
 UI_LOGS_DIR_NAME = 'ui-logs'
 
-INSTAGRAM_MAIN_ACTIVITY = "{0}/com.instagram.mainactivity.MainActivity"
+INSTAGRAM_MAIN_ACTIVITY_CANDIDATES = [
+    "{0}/com.instagram.mainactivity.MainActivity",
+    "{0}/com.instagram.mainactivity.InstagramMainActivity",
+    "{0}/com.instagram.android.activity.MainTabActivity",
+    "{0}/com.instagram.mainactivity.LauncherActivity",
+]
 APP_REOPEN_WARNING = "Warning: Activity not started, intent has been delivered to currently running top-most instance."
 
 
@@ -127,16 +132,23 @@ def open_instagram(device_id, app_id) -> bool:
     :return: true if IG app was opened, false if it was already opened
     """
     print("Open Instagram app")
-    cmd = ("adb" + ("" if device_id is None else " -s " + device_id) +
-           f" shell am start -n {INSTAGRAM_MAIN_ACTIVITY.format(app_id)}")
+    adb_prefix = "adb" + ("" if device_id is None else " -s " + device_id)
 
+    for activity in INSTAGRAM_MAIN_ACTIVITY_CANDIDATES:
+        cmd = f"{adb_prefix} shell am start -n {activity.format(app_id)}"
+        cmd_res = subprocess.run(cmd, stdout=PIPE, stderr=PIPE, shell=True, encoding="utf8")
+        err = cmd_res.stderr.strip()
+        if not err or err == APP_REOPEN_WARNING:
+            return err != APP_REOPEN_WARNING
+        if "does not exist" not in err and "Error" not in err:
+            return True
+
+    cmd = f"{adb_prefix} shell monkey -p {app_id} -c android.intent.category.LAUNCHER 1"
     cmd_res = subprocess.run(cmd, stdout=PIPE, stderr=PIPE, shell=True, encoding="utf8")
-    err = cmd_res.stderr.strip()
-    if err:
-        if err == APP_REOPEN_WARNING:
-            return False
-        else:
-            print(COLOR_FAIL + err + COLOR_ENDC)
+    if cmd_res.returncode == 0:
+        return True
+
+    print(COLOR_FAIL + "Could not open Instagram with any known method" + COLOR_ENDC)
     return True
 
 

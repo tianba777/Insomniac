@@ -109,8 +109,11 @@ def iterate_over_followers(device, is_myself, iteration_callback, iteration_call
             try:
                 for item in device.find(resourceId=f'{device.app_id}:id/follow_list_container',
                                         className='android.widget.LinearLayout'):
-                    user_info_view = item.child(index=1)
-                    user_name_view = user_info_view.child(index=0).child()
+                    user_name_view = item.child(resourceId=f'{device.app_id}:id/follow_list_username',
+                                                className='android.widget.TextView')
+                    if not user_name_view.exists(quick=True):
+                        user_info_view = item.child(index=1)
+                        user_name_view = user_info_view.child(index=0).child()
                     if not user_name_view.exists(quick=True):
                         print(COLOR_OKGREEN + "Next item not found: probably reached end of the screen." + COLOR_ENDC)
                         break

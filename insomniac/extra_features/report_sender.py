@@ -82,7 +82,10 @@ def send_report(is_bot_enabled: bool):
         "dms_count_all": dms_count_all,
     }
 
-    network.post("https://insomniac-bot.com/report/", data_set)
+    try:
+        network.post("https://insomniac-bot.com/report/", data_set)
+    except Exception:
+        pass
 
 
 def notify_interaction_targets_finished(username):

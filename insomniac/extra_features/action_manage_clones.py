@@ -304,7 +304,7 @@ def _open_clone(device_id, app_name):
     app_id = get_package_by_name(device_id, app_name)
 
     cmd = ("adb" + ("" if device_id is None else " -s " + device_id) +
-           f" shell am start -n {app_id}/com.instagram.mainactivity.MainActivity")
+           f" shell monkey -p {app_id} -c android.intent.category.LAUNCHER 1")
 
     cmd_res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, encoding="utf8")
     err = cmd_res.stderr.strip()

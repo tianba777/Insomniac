@@ -1,7 +1,7 @@
 from insomniac.utils import *
 from insomniac.views import TabBarView, ProfileView, TabBarTabs, LanguageNotEnglishException, DialogView, OpenedPostView
 
-SEARCH_CONTENT_DESC_REGEX = '[Ss]earch and [Ee]xplore'
+SEARCH_CONTENT_DESC_REGEX = '[Ss]earch( and [Ee]xplore)?'
 
 
 def navigate(device, tab, switch_to_english_on_exception=True):
@@ -44,42 +44,8 @@ def open_instagram_with_network_check(device) -> bool:
     """
     :return: true if IG app was opened, false if it was already opened
     """
-    print("Open Instagram app with network check")
-    device_id = device.device_id
-    app_id = device.app_id
-
-    # Try via starter
-    cmd = ("adb" + ("" if device_id is None else " -s " + device_id) +
-           f" shell am start -a com.alexal1.starter.CHECK_CONNECTION_AND_LAUNCH_APP --es \"package\" \"{app_id}\"")
-    cmd_res = subprocess.run(cmd, stdout=PIPE, stderr=PIPE, shell=True, encoding="utf8")
-    err = cmd_res.stderr.strip()
-    if err:
-        # Fallback to standard way
-        print(COLOR_FAIL + "Didn't work :(" + COLOR_ENDC)
-        return open_instagram(device_id, app_id)
-
-    # Wait until Instagram is actually opened
-    max_attempts = 10
-    attempt = 0
-    while True:
-        sleep(5)
-        attempt += 1
-        resumed_activity_output = execute_command("adb" + ("" if device_id is None else " -s " + device_id) +
-                                                  f" shell dumpsys activity | grep 'mResumedActivity'",
-                                                  error_allowed=False)
-        if resumed_activity_output is None:
-            # Fallback to standard way
-            print(COLOR_FAIL + "Didn't work :(" + COLOR_ENDC)
-            return open_instagram(device_id, app_id)
-        if app_id in resumed_activity_output:
-            break
-
-        if attempt < max_attempts:
-            print(COLOR_OKGREEN + "Instagram is not yet opened, waiting..." + COLOR_ENDC)
-            sleep(10)
-        else:
-            return open_instagram_with_network_check(device)
-    return True
+    print("Open Instagram app")
+    return open_instagram(device.device_id, device.app_id)
 
 
 def close_instagram_and_system_dialogs(device):

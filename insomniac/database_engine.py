@@ -430,10 +430,10 @@ def get_all_scraped_users(address):
         connection = sqlite3.connect(address)
         connection.row_factory = dict_factory
         cursor = connection.cursor()
-        cursor.execute(SQL_SELECT_ALL_FILTERED_USERS)
+        cursor.execute(SQL_SELECT_ALL_SCRAPED_USERS)
         scraped_users = cursor.fetchall()
     except Exception as e:
-        print(COLOR_FAIL + f"[Database] Cannot get all filtered users: {e}" + COLOR_ENDC)
+        print(COLOR_FAIL + f"[Database] Cannot get all scraped users: {e}" + COLOR_ENDC)
     finally:
         if connection:
             # Close the opened connection

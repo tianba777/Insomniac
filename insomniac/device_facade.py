@@ -201,7 +201,7 @@ class DeviceFacade:
     def is_screen_locked(self):
         cmd = f"adb {'' if self.device_id is None else ('-s '+ self.device_id)} shell dumpsys window"
 
-        cmd_res = subprocess.run(cmd, stdout=PIPE, stderr=PIPE, shell=True, encoding="utf8")
+        cmd_res = subprocess.run(cmd, stdout=PIPE, stderr=PIPE, shell=True, encoding="utf8", errors="replace")
         data = cmd_res.stdout.strip()
         flag = search("mDreamingLockscreen=(true|false)", data)
         return True if flag.group(1) == "true" else False
@@ -310,7 +310,7 @@ class DeviceFacade:
     def is_keyboard_open(self):
         cmd = f"adb {'' if self.device_id is None else ('-s '+ self.device_id)} shell dumpsys input_method"
 
-        cmd_res = subprocess.run(cmd, stdout=PIPE, stderr=PIPE, shell=True, encoding="utf8")
+        cmd_res = subprocess.run(cmd, stdout=PIPE, stderr=PIPE, shell=True, encoding="utf8", errors="replace")
         data = cmd_res.stdout.strip()
         flag = search("mInputShown=(true|false)", data)
         if flag is not None:
@@ -651,7 +651,7 @@ class DeviceFacade:
             if self.viewV1 is not None:
                 import uiautomator
                 try:
-                    self.viewV1.info["selected"]
+                    return self.viewV1.info["selected"]
                 except uiautomator.JsonRPCError as e:
                     raise DeviceFacade.JsonRpcError(e)
             else:
@@ -665,7 +665,7 @@ class DeviceFacade:
             if self.viewV1 is not None:
                 import uiautomator
                 try:
-                    self.viewV1.info["enabled"]
+                    return self.viewV1.info["enabled"]
                 except uiautomator.JsonRPCError as e:
                     raise DeviceFacade.JsonRpcError(e)
             else:
@@ -679,7 +679,7 @@ class DeviceFacade:
             if self.viewV1 is not None:
                 import uiautomator
                 try:
-                    self.viewV1.info["focused"]
+                    return self.viewV1.info["focused"]
                 except uiautomator.JsonRPCError as e:
                     raise DeviceFacade.JsonRpcError(e)
             else:

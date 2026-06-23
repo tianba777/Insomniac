@@ -40,16 +40,18 @@ class ActivationController:
 
     def get_extra_feature(self, module, ui=False):
         print_debug_ui(f"Getting extra-feature, module: {module}, is ui: {ui} ")
-        extra_feature_path = PATH_UI_EXTRA_FEATURE if ui else PATH_EXTRA_FEATURE
-        code, body, fail_reason = network.get(f"{HOST}{extra_feature_path}{module}"
-                                              f"?activation_code={self.activation_code}"
-                                              f"&version={__version__}")
-        if code == HTTP_OK and body is not None:
-            extra_feature = base64.b64decode(zlib.decompress(body))
-            return self.load_extra_feature(extra_feature, module)
+        try:
+            extra_feature_path = PATH_UI_EXTRA_FEATURE if ui else PATH_EXTRA_FEATURE
+            code, body, fail_reason = network.get(f"{HOST}{extra_feature_path}{module}"
+                                                  f"?activation_code={self.activation_code}"
+                                                  f"&version={__version__}")
+            if code == HTTP_OK and body is not None:
+                extra_feature = base64.b64decode(zlib.decompress(body))
+                return self.load_extra_feature(extra_feature, module)
+        except Exception:
+            pass
 
-        print(COLOR_FAIL + f"Cannot get {'ui-' if ui else ''}module {module} from v{__version__}: "
-                           f"{code} ({fail_reason})" + COLOR_ENDC)
+        print(COLOR_FAIL + f"Cannot get {'ui-' if ui else ''}module {module}: server offline (project archived)" + COLOR_ENDC)
         return None
 
     def load_extra_feature(self, extra_feature, module):

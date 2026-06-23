@@ -48,7 +48,7 @@ class Typewriter:
             adb_keybpard_apk = ADB_KEYBOARD_APK if is_insomniac() else ADB_KEYBOARD_APK_NOMIX
             apk_path = os.path.join(os.path.dirname(os.path.abspath(insomniac.__file__)), "assets", adb_keybpard_apk)
             os.popen("adb" + ("" if self.device_id is None else " -s " + self.device_id)
-                     + f" install {apk_path}").close()
+                     + f' install "{apk_path}"').close()
         self.is_adb_keyboard_set = self._set_adb_ime()
         if not self.is_adb_keyboard_set:
             print(COLOR_FAIL + "Cannot setup ADB Keyboard. Don't worry! Fallback to text copy-pasting will be used."

@@ -160,30 +160,7 @@ class Session(ABC):
     def verify_instagram_version(args, installed_ig_version):
         if args.no_ig_version_check:
             return
-
-        code, body, _ = network.get(f"https://insomniac-bot.com/get_latest_supported_ig_version/")
-        if code == HTTP_OK and body is not None:
-            json_config = json.loads(body)
-            latest_supported_ig_version = json_config['message']
-        else:
-            return
-
-        try:
-            is_ok = versiontuple(installed_ig_version) <= versiontuple(latest_supported_ig_version)
-        except ValueError:
-            print_debug(COLOR_FAIL + "Cannot compare IG versions" + COLOR_ENDC)
-            return
-
-        if not is_ok:
-            print_timeless("")
-            print_timeless(COLOR_FAIL + f"IG version ({installed_ig_version}) is newer than "
-                                        f"latest supported ({latest_supported_ig_version})." + COLOR_ENDC)
-            if insomniac_globals.is_insomniac():
-                print_timeless(COLOR_FAIL + "Please uninstall IG and download recommended apk from here:" + COLOR_ENDC)
-                print_timeless(
-                    COLOR_FAIL + COLOR_BOLD + "https://insomniac-bot.com/get_latest_supported_ig_apk/" + COLOR_ENDC)
-                input(COLOR_FAIL + "Press ENTER to continue anyway..." + COLOR_ENDC)
-            print_timeless("")
+        print(f"Instagram version: {installed_ig_version} (version check skipped, server offline)")
 
     def run(self):
         raise NotImplementedError
