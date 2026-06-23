@@ -1199,6 +1199,16 @@ class ProfileView(InstagramView):
                 resourceIdMatches=f"{self.device.app_id}:id/profile_header_bio_text",
                 className="android.widget.TextView",
             )
+            if not biography.exists(quick=True):
+                # v434: bio has no resource-id, find long text inside profile header
+                header = self.device.find(
+                    resourceId=f"{self.device.app_id}:id/row_profile_header")
+                if header.exists(quick=True):
+                    for child in header.child(className="android.widget.TextView"):
+                        text = child.get_text()
+                        if text and len(text) > 5 and not child.info.get("resourceName"):
+                            biography = child
+                            break
             if biography.exists():
                 biography_text = biography.get_text()
                 # If the biography is very long, blabla text and end with "...more"
