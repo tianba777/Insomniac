@@ -7,7 +7,7 @@ from insomniac.navigation import close_instagram_and_system_dialogs
 from insomniac.sleeper import sleeper
 from insomniac.utils import *
 from insomniac.views import TabBarView, TabBarTabs, LanguageNotEnglishException
-from registration.api import get_email_code, get_phone_number, get_confirmation_code
+from registration.api import get_email_code, get_phone_number, get_confirmation_code, solve_captcha
 
 
 class UserData:
@@ -137,13 +137,24 @@ def register_accounts(device_wrapper,
     if continue_btn.exists():
         continue_btn.click()
         sleeper.random_sleep(multiplier=3.0)
-    # ponytail: captcha solving needs external service, skip for now
+
     captcha_input = device.find(className="android.widget.EditText",
                                  textMatches="(?i).*enter.*code.*")
     if captcha_input.exists():
-        print(COLOR_FAIL + "Captcha detected! Manual intervention needed." + COLOR_ENDC)
-        print("Please solve the captcha manually and press Next.")
-        input("Press ENTER after solving captcha...")
+        print("Captcha detected, taking screenshot to solve...")
+        import tempfile, os
+        screenshot_path = os.path.join(tempfile.gettempdir(), "captcha.png")
+        device.screenshot(screenshot_path)
+        with open(screenshot_path, "rb") as f:
+            img_bytes = f.read()
+        captcha_code = solve_captcha(img_bytes)
+        if captcha_code:
+            captcha_input.click()
+            captcha_input.set_text(captcha_code)
+            sleeper.random_sleep()
+        else:
+            print(COLOR_FAIL + "Captcha auto-solve failed. Please solve manually." + COLOR_ENDC)
+            input("Press ENTER after solving captcha...")
     _click_next(device)
     sleeper.random_sleep(multiplier=2.0)
 
