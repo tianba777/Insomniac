@@ -37,10 +37,10 @@ class ChatView(InstagramView):
         return message.exists()
 
     def send_message(self, message) -> bool:
-        edit_text = self.device.find(resourceId=f'{self.device.app_id}:id/row_thread_composer_edittext',
+        edit_text = self.device.find(resourceIdMatches=f'{self.device.app_id}:id/(row_thread_composer_edittext|direct_text_input)',
                                      className='android.widget.EditText')
-        send_button = self.device.find(resourceIdMatches=f'{self.device.app_id}:id/(row_thread_composer_button_send|row_thread_composer_send_button_icon)')
-        message_text_view = self.device.find(resourceIdMatches=f'{self.device.app_id}:id/(direct_text_message_text_view|message_content)',
+        send_button = self.device.find(resourceIdMatches=f'{self.device.app_id}:id/(row_thread_composer_button_send|row_thread_composer_send_button_icon|direct_send_button)')
+        message_text_view = self.device.find(resourceIdMatches=f'{self.device.app_id}:id/(direct_text_message_text_view|direct_text_message|message_content)',
                                              className='android.widget.TextView',
                                              text=message)
 

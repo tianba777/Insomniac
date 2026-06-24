@@ -386,7 +386,7 @@ class SearchView(InstagramView):
             posts_grid.scroll(DeviceFacade.Direction.TOP)
 
     def _get_search_edit_text(self):
-        search_edit_text = self.device.find(resourceId=f"{self.device.app_id}:id/action_bar_search_edit_text",
+        search_edit_text = self.device.find(resourceIdMatches=f"{self.device.app_id}:id/(action_bar_search_edit_text|search_bar_edit_text|search_edit_text)",
                                             className="android.widget.EditText")
         if not search_edit_text.exists(quick=True):
             print(COLOR_OKGREEN + "Cannot find search bar. Will try to refresh the page." + COLOR_ENDC)
@@ -843,7 +843,7 @@ class OpenedPostView(InstagramView):
     POST_VIEW_CLASSNAME = 'android.widget.FrameLayout'
     POST_HEADER_ID = '{0}:id/row_feed_profile_header'
     POST_HEADER_CLASSNAME = 'android.view.ViewGroup'
-    BUTTON_LIKE_ID = '{0}:id/row_feed_button_like'
+    BUTTON_LIKE_ID = '{0}:id/(row_feed_button_like|like_button)'
     BUTTON_LIKE_CLASSNAME = 'android.widget.ImageView'
     TEXT_AUTHOR_NAME_ID = '{0}:id/row_feed_photo_profile_name'
     TEXT_AUTHOR_NAME_CLASSNAME_REGEX = TEXTVIEW_OR_BUTTON_REGEX
@@ -904,7 +904,7 @@ class OpenedPostView(InstagramView):
             self.device.back()
 
         # If like button is not visible, scroll down
-        like_button = self.device.find(resourceId=self.BUTTON_LIKE_ID.format(self.device.app_id),
+        like_button = self.device.find(resourceIdMatches=self.BUTTON_LIKE_ID.format(self.device.app_id),
                                        className=self.BUTTON_LIKE_CLASSNAME)
         if not like_button.exists(quick=True):
             like_button = self.device.find(descriptionMatches=case_insensitive_re("Like"))
@@ -915,7 +915,7 @@ class OpenedPostView(InstagramView):
         # If double click didn't work, set like by icon click
         try:
             # Try resource-id first, fallback to content-desc
-            like_buttons = self.device.find(resourceId=self.BUTTON_LIKE_ID.format(self.device.app_id),
+            like_buttons = self.device.find(resourceIdMatches=self.BUTTON_LIKE_ID.format(self.device.app_id),
                                             className=self.BUTTON_LIKE_CLASSNAME,
                                             selected=False)
             if not like_buttons.exists(quick=True):

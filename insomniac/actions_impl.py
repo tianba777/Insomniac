@@ -406,8 +406,7 @@ def _open_photo_and_like_and_comment(device, row, column, do_like, do_comment, l
 
 
 def _comment(device, my_username, comments_list, on_comment):
-    comment_button = device.find(resourceId=f'{device.app_id}:id/row_feed_button_comment',
-                                 className="android.widget.ImageView")
+    comment_button = device.find(resourceIdMatches=f'{device.app_id}:id/(row_feed_button_comment|comment_button)')
     if not comment_button.exists(quick=True):
         comment_button = device.find(descriptionMatches=case_insensitive_re("Comment"))
     if not comment_button.exists(quick=True) or not ActionBarView.is_in_interaction_rect(comment_button):
@@ -425,7 +424,7 @@ def _comment(device, my_username, comments_list, on_comment):
         comment_button.click()
         sleeper.random_sleep()
 
-        comment_box = device.find(resourceIdMatches=f'{device.app_id}:id/(layout_comment_thread_edittext|layout_comment_thread_edittext_multiline)')
+        comment_box = device.find(resourceIdMatches=f'{device.app_id}:id/(layout_comment_thread_edittext|layout_comment_thread_edittext_multiline|comment_composer_edit_text)')
         if comment_box.exists(quick=True):
             if not comment_box.is_enabled():
                 print("Comments are restricted – not commenting...")
@@ -446,7 +445,7 @@ def _comment(device, my_username, comments_list, on_comment):
     comment_box.set_text(comment)
     sleeper.random_sleep()
 
-    post_button = device.find(resourceIdMatches=f'{device.app_id}:id/(layout_comment_thread_post_button_click_area|layout_comment_thread_post_button_icon)')
+    post_button = device.find(resourceIdMatches=f'{device.app_id}:id/(layout_comment_thread_post_button_click_area|layout_comment_thread_post_button_icon|comment_composer_post_button)')
     if not post_button.exists(quick=True):
         post_button = device.find(descriptionMatches=case_insensitive_re("Post"))
     post_button.click()
