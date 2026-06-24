@@ -1,6 +1,7 @@
 # Registration API — email code, phone number, SMS code, captcha
 # Integrates with: mail_api (Outlook), firefox_sms (火狐狸), 2captcha
 import json
+import os
 import re
 import time
 import base64
@@ -12,12 +13,12 @@ from insomniac.utils import *
 
 # ── Config ──
 
-MAIL_API_URL = "http://127.0.0.1:9700"
-HELPER_API_URL = "http://127.0.0.1:18234"
-CAPTCHA_API_KEY = "REMOVED_KEY"
+MAIL_API_URL = os.environ.get("MAIL_API_URL", "http://127.0.0.1:9700")
+HELPER_API_URL = os.environ.get("HELPER_API_URL", "http://127.0.0.1:18234")
+CAPTCHA_API_KEY = os.environ.get("CAPTCHA_API_KEY", "")
 
-SMS_PROJECT_ID = 1001
-SMS_COUNTRY = "HK"
+SMS_PROJECT_ID = int(os.environ.get("SMS_PROJECT_ID", "0"))
+SMS_COUNTRY = os.environ.get("SMS_COUNTRY", "HK")
 SMS_POLL_TIMEOUT = 300
 EMAIL_POLL_TIMEOUT = 120
 
