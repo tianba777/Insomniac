@@ -1,4 +1,4 @@
-from random import uniform
+from random import uniform, gauss, random
 
 from insomniac.utils import *
 
@@ -27,7 +27,13 @@ class Sleeper:
         pass
 
     def random_sleep(self, multiplier=1.0):
-        delay = uniform(self.sleep_range_start, self.sleep_range_end) * multiplier
+        delay = max(0.5, gauss(
+            (self.sleep_range_start + self.sleep_range_end) / 2,
+            (self.sleep_range_end - self.sleep_range_start) / 3
+        )) * multiplier
+        # 8% chance of a longer "thinking" pause
+        if random() < 0.08:
+            delay += uniform(2.0, 6.0)
         print(f"Sleep for {delay:.2f} seconds")
         sleep(delay)
 

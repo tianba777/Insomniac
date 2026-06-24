@@ -10,8 +10,9 @@ ADB_KEYBOARD_IME = "com.alexal1.adbkeyboard/.AdbIME"
 ADB_KEYBOARD_APK = "ADBKeyboard.apk"
 ADB_KEYBOARD_APK_NOMIX = "ADBKeyboard-nomix.apk"
 ADB_KEYBOARD_VERSION = versiontuple("3.0.2")
-DELAY_MEAN = 200
-DELAY_DEVIATION = 100
+DELAY_MEAN = 180
+DELAY_DEVIATION = 80
+TYPO_CHANCE = 0.04
 IME_MESSAGE_B64 = "ADB_INPUT_B64"
 IME_CLEAR_TEXT = "ADB_CLEAR_TEXT"
 EXTRA_MESSAGE = "msg"
@@ -61,18 +62,41 @@ class Typewriter:
             view.click()
         if not self.clear():
             return False
-        text_b64 = base64.b64encode(text.encode('utf-8')).decode('utf-8')
-        extras = {
-            EXTRA_MESSAGE: text_b64,
-            EXTRA_DELAY_MEAN: DELAY_MEAN,
-            EXTRA_DELAY_DEVIATION: DELAY_DEVIATION
-        }
-        self._send_broadcast(IME_MESSAGE_B64, extras)
-        sleep_millis = DELAY_MEAN * len(text) + DELAY_DEVIATION
-        sleep_secs = sleep_millis / 1000.0
-        print_debug(f"Wait until text is typed: {sleep_secs} seconds")
-        sleep(sleep_secs)
+
+        import random as _rnd
+        typed_len = 0
+        for i, char in enumerate(text):
+            # 4% chance to type wrong char then delete (letters only)
+            if _rnd.random() < TYPO_CHANCE and char.isalpha():
+                wrong = _rnd.choice("abcdefghijklmnopqrstuvwxyz")
+                self._type_char(wrong)
+                sleep(_rnd.gauss(0.18, 0.05))
+                self._send_broadcast(IME_CLEAR_TEXT)
+                sleep(_rnd.gauss(0.12, 0.03))
+                self._type_char(char)
+            else:
+                self._type_char(char)
+
+            # Variable delay per character
+            delay = max(0.04, _rnd.gauss(DELAY_MEAN / 1000.0, DELAY_DEVIATION / 1000.0))
+            # Consecutive digits are faster (phone numbers, codes)
+            if char.isdigit() and i > 0 and text[i - 1].isdigit():
+                delay *= 0.6
+            # Uppercase is slightly slower
+            if char.isupper():
+                delay += _rnd.uniform(0.03, 0.08)
+            # 8% chance of a longer pause (thinking)
+            if _rnd.random() < 0.08:
+                delay += _rnd.uniform(0.3, 0.8)
+            sleep(delay)
+            typed_len += 1
+
         return True
+
+    def _type_char(self, char):
+        char_b64 = base64.b64encode(char.encode('utf-8')).decode('utf-8')
+        extras = {EXTRA_MESSAGE: char_b64, EXTRA_DELAY_MEAN: 0, EXTRA_DELAY_DEVIATION: 0}
+        self._send_broadcast(IME_MESSAGE_B64, extras)
 
     def clear(self) -> bool:
         if not self.is_adb_keyboard_set:

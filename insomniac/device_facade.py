@@ -1,6 +1,6 @@
 from enum import Enum, unique
 from os import listdir
-from random import uniform
+from random import uniform, gauss
 from re import search
 
 from PIL.Image import Image
@@ -458,21 +458,17 @@ class DeviceFacade:
 
             mode = DeviceFacade.Place.WHOLE if mode is None else mode
             if mode == DeviceFacade.Place.WHOLE:
-                x_offset = uniform(0.15, 0.85)
-                y_offset = uniform(0.15, 0.85)
-
+                x_offset = max(0.15, min(0.85, gauss(0.5, 0.12)))
+                y_offset = max(0.15, min(0.85, gauss(0.5, 0.12)))
             elif mode == DeviceFacade.Place.LEFT:
-                x_offset = uniform(0.15, 0.4)
-                y_offset = uniform(0.15, 0.85)
-
+                x_offset = max(0.15, min(0.4, gauss(0.27, 0.05)))
+                y_offset = max(0.15, min(0.85, gauss(0.5, 0.12)))
             elif mode == DeviceFacade.Place.CENTER:
-                x_offset = uniform(0.4, 0.6)
-                y_offset = uniform(0.15, 0.85)
-
+                x_offset = max(0.4, min(0.6, gauss(0.5, 0.04)))
+                y_offset = max(0.15, min(0.85, gauss(0.5, 0.12)))
             elif mode == DeviceFacade.Place.RIGHT:
-                x_offset = uniform(0.6, 0.85)
-                y_offset = uniform(0.15, 0.85)
-
+                x_offset = max(0.6, min(0.85, gauss(0.72, 0.05)))
+                y_offset = max(0.15, min(0.85, gauss(0.5, 0.12)))
             else:
                 x_offset = 0.5
                 y_offset = 0.5
