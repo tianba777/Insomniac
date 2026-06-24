@@ -27,6 +27,62 @@ Insomniac is **completely free & opensource** as of **v3.9.0**. "Extra features"
 
 ---
 
+### 🔧 Fork Update: Instagram v434+ Compatibility (2026-06)
+
+This fork has been updated to work with **Instagram v434.0.0** (2026). The original Insomniac was archived in Jan 2025 and stopped working due to Instagram UI changes.
+
+#### What's Fixed
+
+**Core Functionality (All Tested & Working)**
+- ✅ **Like** — double-click + fallback to content-desc "Like"
+- ✅ **Follow / Unfollow** — profile button detection updated
+- ✅ **Story Watch** — reel_viewer_media_container (replaces removed reel_viewer_image_view)
+- ✅ **Search Users** — search-first then tab-switch (new IG shows results in "For you" tab)
+- ✅ **Search Hashtags** — requires `#` prefix in v434, auto-handled
+- ✅ **Comment** — new edittext IDs (layout_comment_thread_edittext_multiline, comment_composer_edit_text)
+- ✅ **DM / Message** — updated send button ID, Message button className fix
+- ✅ **Iterate Followers** — resource-id based username lookup with child-index fallback
+
+**Instagram v434 UI Changes Handled**
+- Tab bar redesign: Home → Reels → Message → Search → Profile (removed Activity/Orders tabs)
+- Profile counts: new `profile_header_familiar_*_value` IDs
+- Bio text: no longer has resource-id, fallback to text content detection
+- HomeView detection: `action_bar_LinearLayout` (replaces removed title container IDs)
+- Options menu: content-desc "Options" (no resource-id in v434)
+- Post view: added `carousel_media_group`, `media_group` to detection regex
+
+**Infrastructure Fixes**
+- App launch: tries 4 activity names + monkey fallback (MainActivity no longer exists)
+- Windows compatibility: replaced all `grep`/`sed`/`awk` with Python-side filtering
+- Dead server removal: `insomniac-bot.com` calls removed/wrapped (server offline since archive)
+- Encoding fix: `errors="replace"` for UTF-8 subprocess output (fixes GitHub issue #450)
+- Missing return statements fixed in device_facade.py
+- SSL verification enabled, missing commas in user-agent list fixed
+- Path quoting for ADB commands (fixes paths with spaces)
+- Dependencies: pinned `uiautomator2>=2.16,<3.0`, removed `psycopg2-binary`
+- Python requirement: `>=3.7` (was 3.6, but code uses 3.7+ features)
+
+**Registration (Rewritten for v434)**
+- Complete 12-step email-first registration flow
+- Integrated with Outlook Graph API (email verification), 火狐狸 SMS API, 2Captcha
+- SMS 3-retry with phone number release/blacklist
+- Auto WhatsApp→SMS switching
+- Captcha auto-solve via screenshot + 2Captcha API
+
+**Resource-ID Coverage**
+- Cross-referenced with APK static analysis (18,212 IDs from v433 jadx decompilation)
+- Three-layer fallback: device-verified ID → APK-confirmed ID → content-desc
+
+#### What's NOT Working
+- **Remove mass followers** — Instagram v434 removed the "Remove" button from followers list
+- **Registration** — code is ready but not yet tested end-to-end (requires email + SMS API services running)
+
+#### Quick Start
+```bash
+pip install -r requirements.txt
+python start.py --device 127.0.0.1:7555 --interact "@target_account" --likes-count 1-2 --speed 1 --no-speed-check --no-ig-connection-check --no-ig-version-check --no-typing
+```
+
 <br />
 
 ### Why Automating Instagram Activity (Liking, Following, etc.)?
