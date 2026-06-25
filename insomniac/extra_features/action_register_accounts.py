@@ -34,13 +34,17 @@ def register_accounts(device_wrapper,
 
     # Step 1: Click "Create new account"
     print("Step 1: Click 'Create new account'")
-    create_btn = device.find(descriptionMatches="(?i)create new account")
+    create_btn = device.find(resourceId=f'{app_id}:id/sign_up_with_email_or_phone')
+    if not create_btn.exists():
+        create_btn = device.find(descriptionMatches="(?i)create new account")
     if not create_btn.exists():
         print("Clearing Instagram data to get login page...")
         clear_instagram_data(device_id, app_id)
         open_instagram(device_id, app_id)
         sleeper.random_sleep(multiplier=3.0)
-        create_btn = device.find(descriptionMatches="(?i)create new account")
+        create_btn = device.find(resourceId=f'{app_id}:id/sign_up_with_email_or_phone')
+        if not create_btn.exists():
+            create_btn = device.find(descriptionMatches="(?i)create new account")
     if not create_btn.exists():
         print(COLOR_FAIL + "Cannot find 'Create new account' button!" + COLOR_ENDC)
         return
