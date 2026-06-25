@@ -451,12 +451,11 @@ def _comment(device, my_username, comments_list, on_comment):
     post_button.click()
 
     sleeper.random_sleep()
-    softban_indicator.detect_action_blocked_dialog(device)
 
     device.close_keyboard()
 
     just_post = device.find(
-        resourceId=f'{device.app_id}:id/row_comment_textview_comment',
+        resourceIdMatches=f'{device.app_id}:id/(row_comment_textview_comment|comment_text)',
         textMatches=f"(?i).*{re.escape(comment)}.*",
     )
 
@@ -469,6 +468,8 @@ def _comment(device, my_username, comments_list, on_comment):
     sleeper.random_sleep()
     print("Go back to post view.")
     device.back()
+    sleeper.random_sleep()
+    softban_indicator.detect_action_blocked_dialog(device)
 
 
 def _follow(device, username, follow_percentage, is_scrolled_down):
