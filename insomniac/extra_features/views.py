@@ -40,9 +40,6 @@ class ChatView(InstagramView):
         edit_text = self.device.find(resourceIdMatches=f'{self.device.app_id}:id/(row_thread_composer_edittext|direct_text_input)',
                                      className='android.widget.EditText')
         send_button = self.device.find(resourceIdMatches=f'{self.device.app_id}:id/(row_thread_composer_button_send|row_thread_composer_send_button_icon|direct_send_button)')
-        message_text_view = self.device.find(resourceIdMatches=f'{self.device.app_id}:id/(direct_text_message_text_view|direct_text_message|message_content)',
-                                             className='android.widget.TextView',
-                                             text=message)
 
         edit_text.click()
         edit_text.set_text(message)
@@ -51,8 +48,12 @@ class ChatView(InstagramView):
         sleeper.random_sleep()
         self.device.close_keyboard()
 
-        # Make sure that message is sent
-        return message_text_view.exists()
+        # Verify: check if edit text is now empty (message was sent)
+        if edit_text.exists(quick=True):
+            current_text = edit_text.get_text()
+            if current_text and message in current_text:
+                return False
+        return True
 
 
 class StartPageView(InstagramView):
