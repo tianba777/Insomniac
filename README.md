@@ -34,14 +34,20 @@ This fork has been updated to work with **Instagram v434.0.0** (2026). The origi
 #### What's Fixed
 
 **Core Functionality (All Tested & Working)**
-- ✅ **Like** — double-click + fallback to content-desc "Like"
-- ✅ **Follow / Unfollow** — profile button detection updated
+- ✅ **Like** — double-click + fallback to content-desc "Like" + APK `like_button` ID
+- ✅ **Follow / Unfollow** — profile button detection updated, both list and profile unfollow verified
 - ✅ **Story Watch** — reel_viewer_media_container (replaces removed reel_viewer_image_view)
 - ✅ **Search Users** — search-first then tab-switch (new IG shows results in "For you" tab)
 - ✅ **Search Hashtags** — requires `#` prefix in v434, auto-handled
-- ✅ **Comment** — new edittext IDs (layout_comment_thread_edittext_multiline, comment_composer_edit_text)
-- ✅ **DM / Message** — updated send button ID, Message button className fix
+- ✅ **Comment** — new edittext IDs (layout_comment_thread_edittext_multiline, comment_composer_edit_text). Fixed softban false positive caused by comment sheet being detected as block dialog
+- ✅ **DM / Message** — updated send button ID, message verification by text match (v434 message bubbles have no resource-id)
+- ✅ **Scrape** — follower scraping verified working
 - ✅ **Iterate Followers** — resource-id based username lookup with child-index fallback
+
+**Human-Like Behavior Enhancements**
+- Click offsets use normal distribution (gauss) instead of uniform — clicks cluster near center like real fingers
+- Typing: 4% chance of typo then backspace, per-character variable delay, digits typed faster, uppercase slower
+- Sleep delays use normal distribution with 8% chance of "thinking" pause (2-6s extra)
 
 **Instagram v434 UI Changes Handled**
 - Tab bar redesign: Home → Reels → Message → Search → Profile (removed Activity/Orders tabs)
@@ -50,6 +56,7 @@ This fork has been updated to work with **Instagram v434.0.0** (2026). The origi
 - HomeView detection: `action_bar_LinearLayout` (replaces removed title container IDs)
 - Options menu: content-desc "Options" (no resource-id in v434)
 - Post view: added `carousel_media_group`, `media_group` to detection regex
+- ListView scroll: all scroll calls check existence first, fallback to swipe (prevents crashes)
 
 **Infrastructure Fixes**
 - App launch: tries 4 activity names + monkey fallback (MainActivity no longer exists)
@@ -61,6 +68,7 @@ This fork has been updated to work with **Instagram v434.0.0** (2026). The origi
 - Path quoting for ADB commands (fixes paths with spaces)
 - Dependencies: pinned `uiautomator2>=2.16,<3.0`, removed `psycopg2-binary`
 - Python requirement: `>=3.7` (was 3.6, but code uses 3.7+ features)
+- Sleeper random module name collision fixed
 
 **Registration (Rewritten for v434)**
 - Complete 12-step email-first registration flow
@@ -68,6 +76,7 @@ This fork has been updated to work with **Instagram v434.0.0** (2026). The origi
 - SMS 3-retry with phone number release/blacklist
 - Auto WhatsApp→SMS switching
 - Captcha auto-solve via screenshot + 2Captcha API
+- All secrets via environment variables (CAPTCHA_API_KEY, SMS_PROJECT_ID, etc.)
 
 **Resource-ID Coverage**
 - Cross-referenced with APK static analysis (18,212 IDs from v433 jadx decompilation)
