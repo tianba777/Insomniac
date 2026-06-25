@@ -52,8 +52,15 @@ def scroll_to_bottom(device):
 
     list_view = device.find(resourceId='android:id/list',
                             className='android.widget.ListView')
+    if not list_view.exists(quick=True):
+        list_view = device.find(resourceId='android:id/list',
+                                className='androidx.recyclerview.widget.RecyclerView')
     while not is_end_reached():
-        list_view.swipe(DeviceFacade.Direction.BOTTOM)
+        if list_view.exists(quick=True):
+            list_view.swipe(DeviceFacade.Direction.BOTTOM)
+        else:
+            device.swipe(DeviceFacade.Direction.TOP)
+            break
 
     print("Scroll back to the first follower")
 

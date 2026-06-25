@@ -1403,8 +1403,14 @@ class FollowersFollowingListView(InstagramView):
 
         list_view = self.device.find(resourceId='android:id/list',
                                      className='android.widget.ListView')
+        if not list_view.exists(quick=True):
+            list_view = self.device.find(resourceId='android:id/list',
+                                         className='androidx.recyclerview.widget.RecyclerView')
         while not is_end_reached():
-            list_view.swipe(DeviceFacade.Direction.BOTTOM)
+            if list_view.exists(quick=True):
+                list_view.swipe(DeviceFacade.Direction.BOTTOM)
+            else:
+                break
 
     def scroll_to_top(self):
         print("Scroll to top of the list")
@@ -1416,9 +1422,15 @@ class FollowersFollowingListView(InstagramView):
 
         list_view = self.device.find(resourceId='android:id/list',
                                      className='android.widget.ListView')
+        if not list_view.exists(quick=True):
+            list_view = self.device.find(resourceId='android:id/list',
+                                         className='androidx.recyclerview.widget.RecyclerView')
 
         while not is_at_least_one_follower():
-            list_view.scroll(DeviceFacade.Direction.TOP)
+            if list_view.exists(quick=True):
+                list_view.scroll(DeviceFacade.Direction.TOP)
+            else:
+                break
 
     def is_list_empty(self):
         # Looking for any profile in the list, just to make sure its loaded with profiles
@@ -1501,15 +1513,20 @@ class FollowersFollowingListView(InstagramView):
                 need_swipe = screen_skipped_followers_count == len(screen_iterated_followers)
                 list_view = self.device.find(resourceId='android:id/list',
                                              className='android.widget.ListView')
-                if not list_view.exists():
+                if not list_view.exists(quick=True):
+                    list_view = self.device.find(resourceId='android:id/list',
+                                                 className='androidx.recyclerview.widget.RecyclerView')
+                if not list_view.exists(quick=True):
                     print(COLOR_FAIL + "Cannot find the list of followers. Trying to press back again." + COLOR_ENDC)
                     self.device.back()
-                    list_view = self.device.find(resourceId='android:id/list',
-                                                 className='android.widget.ListView')
+                    list_view = self.device.find(resourceId='android:id/list')
 
                 if is_myself:
                     print(COLOR_OKGREEN + "Need to scroll now" + COLOR_ENDC)
-                    list_view.scroll(DeviceFacade.Direction.TOP)
+                    if list_view.exists(quick=True):
+                        list_view.scroll(DeviceFacade.Direction.TOP)
+                    else:
+                        self.device.swipe(DeviceFacade.Direction.BOTTOM)
                 else:
                     pressed_retry = False
                     if load_more_button_exists:
@@ -1522,10 +1539,16 @@ class FollowersFollowingListView(InstagramView):
 
                     if need_swipe and not pressed_retry:
                         print(COLOR_OKGREEN + "All followers skipped, let's do a swipe" + COLOR_ENDC)
-                        list_view.swipe(DeviceFacade.Direction.BOTTOM)
+                        if list_view.exists(quick=True):
+                            list_view.swipe(DeviceFacade.Direction.BOTTOM)
+                        else:
+                            self.device.swipe(DeviceFacade.Direction.TOP)
                     else:
                         print(COLOR_OKGREEN + "Need to scroll now" + COLOR_ENDC)
-                        list_view.scroll(DeviceFacade.Direction.BOTTOM)
+                        if list_view.exists(quick=True):
+                            list_view.scroll(DeviceFacade.Direction.BOTTOM)
+                        else:
+                            self.device.swipe(DeviceFacade.Direction.TOP)
 
                 prev_screen_iterated_followers.clear()
                 prev_screen_iterated_followers += screen_iterated_followers
