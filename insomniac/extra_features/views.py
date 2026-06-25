@@ -32,9 +32,14 @@ class ChatView(InstagramView):
                                 className=self.MESSAGE_LIST_CLASSNAME).exists()
 
     def is_message_exists(self) -> bool:
-        message = self.device.find(resourceIdMatches=f'{self.device.app_id}:id/(direct_text_message_text_view|message_content)',
-                                   className='android.widget.TextView')
-        return message.exists()
+        message = self.device.find(resourceIdMatches=f'{self.device.app_id}:id/(direct_text_message_text_view|direct_text_message|message_content)')
+        if message.exists():
+            return True
+        # v434: messages have no resource-id, check for any TextView in message list
+        msg_list = self.device.find(resourceId=self.MESSAGE_LIST_ID.format(self.device.app_id))
+        if msg_list.exists():
+            return msg_list.child(className='android.widget.TextView').exists()
+        return False
 
     def send_message(self, message) -> bool:
         edit_text = self.device.find(resourceIdMatches=f'{self.device.app_id}:id/(row_thread_composer_edittext|direct_text_input)',
@@ -48,12 +53,9 @@ class ChatView(InstagramView):
         sleeper.random_sleep()
         self.device.close_keyboard()
 
-        # Verify: check if edit text is now empty (message was sent)
-        if edit_text.exists(quick=True):
-            current_text = edit_text.get_text()
-            if current_text and message in current_text:
-                return False
-        return True
+        # Verify: find the sent message text on screen
+        sent_msg = self.device.find(className='android.widget.TextView', text=message)
+        return sent_msg.exists()
 
 
 class StartPageView(InstagramView):
